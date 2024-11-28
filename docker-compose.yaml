@@ -1,0 +1,54 @@
+version: '3'
+services:
+  l11dev-nginx:
+    container_name: "l11dev-nginx"
+    build:
+      context: ./docker/nginx
+    depends_on:
+      - l11dev-app
+    ports:
+      - 80:80
+    volumes:
+      - ./:/src
+    networks:
+        - blog-app-network
+
+  l11dev-app:
+    container_name: "l11dev-app"
+    build:
+      context: ./docker/php
+    depends_on:
+      - l11dev-mysql
+    volumes:
+      - ./:/src
+      - /src/node_modules
+      - /src/vendor
+    networks:
+        - blog-app-network
+
+  l11dev-mysql:
+    image: mysql:8.0.37
+    container_name: "l11dev-mysql"
+    volumes:
+        - mysql_data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=l11dev
+    ports:
+      - 3306:3306
+    networks:
+        - blog-app-network
+
+  l11dev-redis:
+    image: redis:alpine
+    container_name: "l11dev-redis"
+    ports:
+      - 16379:6379
+    networks:
+        - blog-app-network
+
+volumes:
+    mysql_data:
+networks:
+  blog-app-network:
+    driver: bridge
